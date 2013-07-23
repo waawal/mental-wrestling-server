@@ -4,70 +4,83 @@ app.http().io()
 #build your realtime-web app
 app.listen 7076
 
+playerQueue = []
+activeGames = {}
+
 class Game
 
-  constructor: (@roomName) ->
-    @room = app.io.room(@roomName)
-    [@pl1, @pl2] = app.io.sockets.clients(@roomName)
-    @pl1.set 'roomName', @roomName
-    @pl2.set 'roomName', @roomName
-    @pl1.set 'clicks', 0
+  constructor: (@roomName, @pl1, @pl2) ->
+    @pl1.socket.set 'roomName', @roomName
+    @pl2.socket.set 'roomName', @roomName
+    @pl1.socket.set 'clicks', 0
+    @pl2.socket.set 'clicks', 0
+    @emitToRoom 'screen', 'game'
     @emitToRoom 'gameStatus', 'preGame'
-    setTimeOut (=>
+    setTimeout (=>
       @startGame()
       ), 10000
 
   emitToRoom: (event, data) =>
-    app.io.sockets.in(@roomName).emit event, data
+    app.io.room(@roomName).broadcast event, data
 
-  startGame: ->
+  startGame: =>
     @emitToRoom 'gameStatus', 'inGame'
     @interval = setInterval(=>
       @checkClicks()
     , 2000)
   endGame: (winner) ->
     @emitToRoom 'gameStatus', 'endGame'
-    @emitToRoom 'winner', winner.get('playerName')
-    @pl1.set 'roomName', @roomName
-    @pl2.set 'roomName', @roomName
+    @emitToRoom 'winner', winner.socket.get('playerName')
+    @pl1.socket.set 'roomName', false
+    @pl2.socket.set 'roomName', false
     @pl1.leave(@roomName)
     @pl2.leave(@roomName)
     clearInterval(@interval)
+    delete activeGames[roomName]
 
   checkClicks: ->
     # TODO: Fix algo!
-    if @pl1.totalClicks >= 200
-      @endGame(@pl1)
-    else if @pl2.totalClicks >= 200
-      @endGame(@pl2)
+    @pl1.socket.get 'totalClicks', (err, amount) ->
+      if amount >= 200
+        @endGame(@pl1)
+    @pl2.socket.get 'totalClicks', (err, amount) ->
+      if amount >= 200
+        @endGame(@pl2)
 
 
 app.io.route "player",
   name: (req) ->
-    req.io.set 'playerName', req.data
+    req.socket.set 'playerName', req.data
+    req.io.emit 'name', req.data
+    req.io.emit 'screen', "character"
 
   avatar: (req) ->
-    req.io.set 'playerAvatar', req.data
+    req.socket.set 'playerAvatar', req.data
+    req.io.emit 'avatar', req.data
+    playerQueue.push req
+    req.io.emit 'screen', "waiting"
 
   ready: (req) ->
-    req.io.join 'ready'
+    playerQueue.push req
+    req.io.emit 'screen', "waiting"
 
   click: (req) ->
-    if req.io.get(roomName)
-      req.io.set 'clicks', req.io.get(clicks) + req.data
+    req.socket.get 'roomName', (err, room) ->
+      if room
+        req.socket.get 'clicks', (err, amount) ->
+          req.socket.set('clicks', amount + req.data)
 
-setInterval (->
-    sockets = app.io.sockets.clients('ready')
-    if sockets.length >= 2
-      pl1 = sockets[0]
-      pl2 = sockets[1]
-      roomName = "#{ sockets[0].get('playerName') }-#{ sockets[1].get('playerName') }"
-      pl1.join roomName
-      pl2.join roomName
-      pl1.leave 'ready'
-      pl2.leave 'ready'
-      new Game(roomName)
-  ), 500
+checkQueue ->
+  if playerQueue.length >= 2
+    sockets = playerQueue.slice(0,2)
+    pl1 = sockets[0]
+    pl2 = sockets[1]
+    roomName = "#{ pl1.socket.id }-#{ pl2.socket.id }"
+    pl1.io.join roomName
+    pl2.io.join roomName
+    activeGames[roomName] = new Game(roomName, pl1, pl2)
+  setTimeout(checkQueue, 500)
+setTimeout(checkQueue, 500)
 
 # Send the client html.
 app.get "/", (req, res) ->
