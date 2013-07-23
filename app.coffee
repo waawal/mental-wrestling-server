@@ -9,6 +9,9 @@ class Game
   constructor: (@roomName) ->
     @room = app.io.room(@roomName)
     [@pl1, @pl2] = app.io.sockets.clients(@roomName)
+    @pl1.set 'roomName', @roomName
+    @pl2.set 'roomName', @roomName
+    @pl1.set 'clicks', 0
     @emitToRoom 'gameStatus', 'preGame'
     setTimeOut (=>
       @startGame()
@@ -22,9 +25,20 @@ class Game
     @interval = setInterval(=>
       @checkClicks()
       ), 2000
+  endGame: (winner) ->
+    @emitToRoom 'gameStatus', 'endGame'
+    @emitToRoom 'winner', winner.get('playerName')
+    @pl1.set 'roomName', @roomName
+    @pl2.set 'roomName', @roomName
+    @pl1.leave(@roomName)
+    @pl2.leave(@roomName)
 
   checkClicks: ->
-
+    # TODO: Fix algo!
+    if @pl1.totalClicks >= 200
+      @endGame(@pl1)
+    else if @pl2.totalClicks >= 200
+      @endGame(@pl2)
 
 
 app.io.route "player",
@@ -36,6 +50,10 @@ app.io.route "player",
 
   ready: (req) ->
     req.io.join 'ready'
+
+  click: (req) ->
+    if req.io.get(roomName)
+      req.io.set 'clicks', req.io.get(clicks) + req.data
 
 setInterval (->
     sockets = app.io.sockets.clients('ready')
