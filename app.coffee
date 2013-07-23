@@ -24,7 +24,7 @@ class Game
     @emitToRoom 'gameStatus', 'inGame'
     @interval = setInterval(=>
       @checkClicks()
-      ), 2000
+    , 2000)
   endGame: (winner) ->
     @emitToRoom 'gameStatus', 'endGame'
     @emitToRoom 'winner', winner.get('playerName')
@@ -32,6 +32,7 @@ class Game
     @pl2.set 'roomName', @roomName
     @pl1.leave(@roomName)
     @pl2.leave(@roomName)
+    clearInterval(@interval)
 
   checkClicks: ->
     # TODO: Fix algo!
@@ -43,10 +44,10 @@ class Game
 
 app.io.route "player",
   name: (req) ->
-    req.io.set 'playerName' req.data
+    req.io.set 'playerName', req.data
 
   avatar: (req) ->
-    req.io.set 'playerAvatar' req.data
+    req.io.set 'playerAvatar', req.data
 
   ready: (req) ->
     req.io.join 'ready'
