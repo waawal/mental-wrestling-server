@@ -8,14 +8,15 @@ app.use(express.session({secret: 'monkey'}))
 
 playerQueue = []
 activeGames = {}
+clicks = {}
 
 class Game
 
   constructor: (@roomName, @pl1, @pl2) ->
     @pl1.session.roomName = @roomName
     @pl2.session.roomName = @roomName
-    @pl1.session.clicks = 0
-    @pl2.session.clicks = 0
+    @pl1.session.save()
+    @pl2.session.save()
     @emitToRoom 'screen', 'game'
     @emitToRoom 'playerInfo',
       pl1:
@@ -24,12 +25,11 @@ class Game
       pl2:
         name: pl2.session.playerName
         avatar: pl2.session.playerAvatar
-    @pl1.session.save()
-    @pl2.session.save()
+    
     @emitToRoom 'gameStatus', 'preGame'
     setTimeout (=>
       @startGame()
-      ), 10000
+      ), 5000
 
   emitToRoom: (event, data) =>
     app.io.room(@roomName).broadcast event, data
@@ -44,21 +44,21 @@ class Game
     @emitToRoom 'winner', winner.session.playerName
     @pl1.session.roomName = false
     @pl2.session.roomName = false
-    @pl1.leave(@roomName)
-    @pl2.leave(@roomName)
+    @pl1.io.leave(@roomName)
+    @pl2.io.leave(@roomName)
     @pl1.session.save()
     @pl2.session.save()
     clearInterval(@interval)
     delete activeGames[roomName]
 
-  checkClicks: ->
+  checkClicks: =>
     # TODO: Fix algo!
-    total = @pl1.session.clicks + @pl2.session.clicks
+    total = clicks[@pl1.session.playerName] + clicks[@pl2.session.playerName]
     if total
-      percent = 100 / total * @pl1.session.clicks
-      if @pl1.session.clicks >= 200
+      percent = 100 / total * clicks[@pl1.session.playerName]
+      if percent >= 100
           @endGame(@pl1)
-      if @pl2.session.clicks >= 200
+      if @pl2.session.clicks <= 0
           @endGame(@pl2)
     else
       percent = 50
@@ -75,15 +75,20 @@ app.io.route "player",
     req.session.save ->
       playerQueue.push req
       req.io.emit 'screen', "waiting"
+      clicks[req.session.playerName] = 0
 
   ready: (req) ->
     playerQueue.push req
+    clicks[req.session.playerName] = 0
     req.io.emit 'screen', "waiting"
 
   click: (req) ->
-    if req.session.roomName
-      req.session.clicks += req.data
-      req.session.save()
+    #if req.session.roomName
+    console.log req.data
+    console.log clicks[req.session.playerName]
+    clicks[req.session.playerName] += req.data
+    #req.session.clicks += req.data
+    #req.session.save()
 
 checkQueue = ->
   setTimeout(checkQueue, 500)
