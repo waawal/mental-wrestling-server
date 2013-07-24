@@ -24,6 +24,8 @@ class Game
       pl2:
         name: pl2.session.playerName
         avatar: pl2.session.playerAvatar
+    @pl1.session.save()
+    @pl2.session.save()
     @emitToRoom 'gameStatus', 'preGame'
     setTimeout (=>
       @startGame()
@@ -51,12 +53,15 @@ class Game
 
   checkClicks: ->
     # TODO: Fix algo!
-    total = @pl1.session.totalClicks + @pl2.session.totalClicks
-    percent = 100 / total * @pl1.session.totalClicks
-    if @pl1.session.totalClicks >= 200
-        @endGame(@pl1)
-    if @pl2.session.totalClicks >= 200
-        @endGame(@pl2)
+    total = @pl1.session.clicks + @pl2.session.clicks
+    if total
+      percent = 100 / total * @pl1.session.clicks
+      if @pl1.session.clicks >= 200
+          @endGame(@pl1)
+      if @pl2.session.clicks >= 200
+          @endGame(@pl2)
+    else
+      percent = 50
     @emitToRoom 'score', percent
 
 app.io.route "player",
@@ -78,6 +83,7 @@ app.io.route "player",
   click: (req) ->
     if req.session.roomName
       req.session.clicks += req.data
+      req.session.save()
 
 checkQueue = ->
   setTimeout(checkQueue, 500)
