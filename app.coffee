@@ -75,11 +75,11 @@ app.io.route "player",
     req.session.save ->
       playerQueue.push req
       req.io.emit 'screen', "waiting"
-      clicks[req.session.playerName] = 0
+      clicks[req.session.playerName] = 50
 
   ready: (req) ->
     playerQueue.push req
-    clicks[req.session.playerName] = 0
+    clicks[req.session.playerName] = 50
     req.io.emit 'screen', "waiting"
 
   click: (req) ->
