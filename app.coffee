@@ -13,10 +13,6 @@ clicks = {}
 class Game
 
   constructor: (@roomName, @pl1, @pl2) ->
-    @pl1.session.roomName = @roomName
-    @pl2.session.roomName = @roomName
-    @pl1.session.save()
-    @pl2.session.save()
     @emitToRoom 'screen', 'game'
     @emitToRoom 'playerInfo',
       pl1:
@@ -42,14 +38,10 @@ class Game
   endGame: (winner) ->
     @emitToRoom 'gameStatus', 'endGame'
     @emitToRoom 'winner', winner.session.playerName
-    @pl1.session.roomName = false
-    @pl2.session.roomName = false
     @pl1.io.leave(@roomName)
     @pl2.io.leave(@roomName)
-    @pl1.session.save()
-    @pl2.session.save()
     clearInterval(@interval)
-    delete activeGames[roomName]
+    delete activeGames[@roomName]
 
   checkClicks: =>
     # TODO: Fix algo!
@@ -59,15 +51,6 @@ class Game
     else if diff > 50
       @endGame(@pl2)
     percent = diff + 50
-    #total = clicks[@pl1.session.playerName] + clicks[@pl2.session.playerName]
-    #if total
-    #  percent = 100 / total * clicks[@pl1.session.playerName]
-    #  if percent >= 100
-    #      @endGame(@pl1)
-    #  if @pl2.session.clicks <= 0
-    #      @endGame(@pl2)
-    #else
-    #  percent = 50
     @emitToRoom 'score', percent
 
 app.io.route "player",
@@ -89,12 +72,9 @@ app.io.route "player",
     req.io.emit 'screen', "waiting"
 
   click: (req) ->
-    #if req.session.roomName
     console.log req.data
     console.log clicks[req.session.playerName]
     clicks[req.session.playerName] += req.data
-    #req.session.clicks += req.data
-    #req.session.save()
 
 checkQueue = ->
   setTimeout(checkQueue, 500)
