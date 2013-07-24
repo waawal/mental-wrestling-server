@@ -53,15 +53,21 @@ class Game
 
   checkClicks: =>
     # TODO: Fix algo!
-    total = clicks[@pl1.session.playerName] + clicks[@pl2.session.playerName]
-    if total
-      percent = 100 / total * clicks[@pl1.session.playerName]
-      if percent >= 100
-          @endGame(@pl1)
-      if @pl2.session.clicks <= 0
-          @endGame(@pl2)
-    else
-      percent = 50
+    diff = clicks[@pl1.session.playerName] - clicks[@pl2.session.playerName]
+    if diff < -50
+      @endGame(@pl1)
+    else if diff > 50
+      @endGame(@pl2)
+    percent = diff + 50
+    #total = clicks[@pl1.session.playerName] + clicks[@pl2.session.playerName]
+    #if total
+    #  percent = 100 / total * clicks[@pl1.session.playerName]
+    #  if percent >= 100
+    #      @endGame(@pl1)
+    #  if @pl2.session.clicks <= 0
+    #      @endGame(@pl2)
+    #else
+    #  percent = 50
     @emitToRoom 'score', percent
 
 app.io.route "player",
