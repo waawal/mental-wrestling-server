@@ -1,3 +1,8 @@
+require('nodefly').profile(
+    process.env.NODEFLY_APPLICATION_KEY,
+    [process.env.APPLICATION_NAME,'Heroku']
+)
+
 express = require('express.io')
 app = express().http().io()
 
