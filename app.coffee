@@ -43,6 +43,10 @@ class Game
     @pl2.io.leave(@roomName)
     clearInterval(@interval)
     delete activeGames[@roomName]
+    setTimeout(=>
+      winner.io.emit 'screen', 'character'
+      loser.io.emit 'screen', 'character'
+    , 5000)
 
   checkClicks: =>
     # TODO: Fix algo!
