@@ -16,9 +16,9 @@ class Game
 
   constructor: (@roomName, @pl1, @pl2) ->
     @emitToRoom 'screen', 'game'
-    pl1.on "disconnect", =>
+    @pl1.io.on "disconnect", =>
       @endGame(@pl2, @pl1)
-    pl2.on "disconnect", =>
+    @pl2.io.on "disconnect", =>
       @endGame(@pl1, @pl2)
     bg = [0,1,2]
     @emitToRoom 'playerInfo',
