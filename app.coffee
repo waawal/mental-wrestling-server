@@ -3,6 +3,7 @@ app = express().http().io()
 
 app.use(express.cookieParser())
 app.use(express.session({secret: process.env.SECRET or 'monkey'}))
+app.use(express.static('public'))
 
 app.io.configure ->
   app.io.set("transports", ["xhr-polling"])
@@ -16,11 +17,11 @@ class Game
 
   constructor: (@roomName, @pl1, @pl2) ->
     @emitToRoom 'screen', 'game'
-    @pl1.io.on "disconnect", =>
+    @pl1.socket.on "disconnect", =>
       @endGame(@pl2, @pl1)
-    @pl2.io.on "disconnect", =>
+    @pl2.socket.on "disconnect", =>
       @endGame(@pl1, @pl2)
-    bg = [0,1,2]
+    bgChoice = [0,1,2]
     @emitToRoom 'playerInfo',
       pl1:
         name: pl1.session.playerName
@@ -29,7 +30,7 @@ class Game
         name: pl2.session.playerName
         avatar: pl2.session.playerAvatar
       bg:
-        bg[Math.floor(Math.random() * myArray.length)]
+        bgChoice[Math.floor(Math.random() * bgChoice.length)]
     
     @emitToRoom 'gameStatus', 'preGame'
     setTimeout (=>
@@ -107,4 +108,4 @@ app.get "/", (req, res) ->
   res.sendfile __dirname + "/client.html"
 
 
-app.listen 7076
+app.listen process.env.PORT or 7076
