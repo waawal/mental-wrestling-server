@@ -25,7 +25,7 @@ class Game
     @emitToRoom 'gameStatus', 'preGame'
     setTimeout (=>
       @startGame()
-      ), 5000
+      ), 2500
 
   emitToRoom: (event, data) =>
     app.io.room(@roomName).broadcast event, data
@@ -34,7 +34,7 @@ class Game
     @emitToRoom 'gameStatus', 'inGame'
     @interval = setInterval(=>
       @checkClicks()
-    , 2000)
+    , 1000)
   endGame: (winner) ->
     @emitToRoom 'gameStatus', 'endGame'
     @emitToRoom 'winner', winner.session.playerName
