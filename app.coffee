@@ -22,10 +22,10 @@ class Game
 
   constructor: (@roomName, @pl1, @pl2) ->
     @emitToRoom 'screen', 'game'
-    @pl1.socket.on "disconnect", =>
-      @endGame(@pl2, @pl1)
-    @pl2.socket.on "disconnect", =>
-      @endGame(@pl1, @pl2)
+    #@pl1.socket.on "disconnect", =>
+    #  @endGame(@pl2, @pl1)
+    #@pl2.socket.on "disconnect", =>
+    #  @endGame(@pl1, @pl2)
     bgChoice = [0,1,2]
     @emitToRoom 'playerInfo',
       pl1:
