@@ -1,0 +1,15 @@
+.spine{min-height:100%;height:auto !important;height:100%;margin:0}
+html,body{margin:0;font-family:serif;font-size:28px;line-height:20px;color:#ffc0cb}
+input{font-size:22px;width:300px}
+h2{text-align:center;font-size:22px}
+p{text-align:center;}
+p font-size: 64px{text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000}
+.stack > *:not(.active){display:none}
+.intro,.character,.waiting{min-height:100%;height:auto !important;height:100%;display:table;margin:0 auto;padding-top:100px}
+.character .characters{margin:10px}
+#pl1{margin:50px;position:absolute;left:0;top:0}
+#pl2{margin:50px;position:absolute;right:0;top:0}
+#pl1-sitting{position:absolute;bottom:10%;left:30%}
+#pl2-sitting{position:absolute;bottom:10%;right:30%}
+#bar{top:0;display:table;margin:30px auto;height:55px;width:550px;font-size:68px;color:#fff;background:url("img/assets/IN-GAME-POWER-BAR.gif");overflow:hide}
+#fg{display:table;margin:180px auto;font-size:68px;color:#fff}
