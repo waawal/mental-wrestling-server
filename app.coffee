@@ -14,6 +14,11 @@ class Game
 
   constructor: (@roomName, @pl1, @pl2) ->
     @emitToRoom 'screen', 'game'
+    pl1.on "disconnect", =>
+      @endGame(@pl2, @pl1)
+    pl2.on "disconnect", =>
+      @endGame(@pl1, @pl2)
+    bg = [0,1,2]
     @emitToRoom 'playerInfo',
       pl1:
         name: pl1.session.playerName
@@ -21,6 +26,8 @@ class Game
       pl2:
         name: pl2.session.playerName
         avatar: pl2.session.playerAvatar
+      bg:
+        bg[Math.floor(Math.random() * myArray.length)]
     
     @emitToRoom 'gameStatus', 'preGame'
     setTimeout (=>
@@ -39,6 +46,8 @@ class Game
     @emitToRoom 'gameStatus', 'endGame'
     winner.io.emit 'winner', true
     loser.io.emit 'winner', false
+    clicks[@pl1.session.playerName] = 0
+    clicks[@pl2.session.playerName] = 0
     @pl1.io.leave(@roomName)
     @pl2.io.leave(@roomName)
     clearInterval(@interval)
