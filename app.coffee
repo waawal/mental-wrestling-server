@@ -2,9 +2,11 @@ express = require('express.io')
 app = express().http().io()
 
 app.use(express.cookieParser())
-app.use(express.session({secret: 'monkey'}))
+app.use(express.session({secret: process.env.SECRET or 'monkey'}))
 
-
+app.io.configure ->
+  app.io.set("transports", ["xhr-polling"])
+  app.io.set("polling duration", 10)
 
 playerQueue = []
 activeGames = {}
