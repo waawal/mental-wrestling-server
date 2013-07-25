@@ -52,9 +52,9 @@ class Game
     # TODO: Fix algo!
     diff = clicks[@pl1.session.playerName] - clicks[@pl2.session.playerName]
     if diff < -50
-      @endGame(@pl1, @pl2)
-    else if diff > 50
       @endGame(@pl2, @pl1)
+    else if diff > 50
+      @endGame(@pl1, @pl2)
     percent = diff + 50
     @emitToRoom 'score', percent
 
