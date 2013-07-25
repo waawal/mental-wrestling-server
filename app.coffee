@@ -72,8 +72,6 @@ app.io.route "player",
     req.io.emit 'screen', "waiting"
 
   click: (req) ->
-    console.log req.data
-    console.log clicks[req.session.playerName]
     clicks[req.session.playerName] += req.data
 
 checkQueue = ->
