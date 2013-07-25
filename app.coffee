@@ -35,9 +35,10 @@ class Game
     @interval = setInterval(=>
       @checkClicks()
     , 1000)
-  endGame: (winner) ->
+  endGame: (winner, loser) ->
     @emitToRoom 'gameStatus', 'endGame'
-    @emitToRoom 'winner', winner.session.playerName
+    winner.io.emit 'winner', true
+    loser.io.emit 'winner', false
     @pl1.io.leave(@roomName)
     @pl2.io.leave(@roomName)
     clearInterval(@interval)
@@ -47,9 +48,9 @@ class Game
     # TODO: Fix algo!
     diff = clicks[@pl1.session.playerName] - clicks[@pl2.session.playerName]
     if diff < -50
-      @endGame(@pl1)
+      @endGame(@pl1, @pl2)
     else if diff > 50
-      @endGame(@pl2)
+      @endGame(@pl2, @pl1)
     percent = diff + 50
     @emitToRoom 'score', percent
 
