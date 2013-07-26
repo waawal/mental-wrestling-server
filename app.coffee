@@ -106,7 +106,7 @@ checkQueue = ->
     pl1.io.join roomName
     pl2.io.join roomName
     activeGames[roomName] = new Game(roomName, pl1, pl2)
-setTimeout(checkQueue, 500)
+setTimeout(checkQueue, 1000)
 
 # Send the client html.
 app.get "/", (req, res) ->
